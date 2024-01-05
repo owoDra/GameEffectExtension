@@ -7,7 +7,7 @@
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 
-UClass* FAssetTypeActions_LyraContextEffectLibrary::GetSupportedClass() const
+UClass* FAssetTypeActions_ContextEffectLibrary::GetSupportedClass() const
 {
 	return UContextEffectLibrary::StaticClass();
 }

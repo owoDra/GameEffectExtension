@@ -9,7 +9,7 @@
 class UClass;
 
 
-class FAssetTypeActions_LyraContextEffectLibrary : public FAssetTypeActions_Base
+class FAssetTypeActions_ContextEffectLibrary : public FAssetTypeActions_Base
 {
 public:
 	virtual FText GetName() const override 
