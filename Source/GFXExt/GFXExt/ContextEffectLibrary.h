@@ -2,30 +2,19 @@
 
 #pragma once
 
+#include "Engine/DataAsset.h"
+
 #include "GameplayTagContainer.h"
 
 #include "ContextEffectLibrary.generated.h"
 
-class UNiagaraSystem;
-class USoundBase;
+class UActiveContextEffectLibrary;
 
 
 /**
- * Load status of ContextEffectLibrary
+ * Data for ContextEffect to be registered in ContextEffectLibrary
  */
-UENUM()
-enum class EContextEffectLibraryLoadState : uint8 
-{
-	Unloaded = 0,
-	Loading = 1,
-	Loaded = 2
-};
-
-
-/**
- * Effect tags and effect mapping data for ContextEffect to be registered in ContextEffectLibrary
- */
-USTRUCT(BlueprintType)
+USTRUCT()
 struct GFXEXT_API FContextEffect
 {
 	GENERATED_BODY()
@@ -33,81 +22,43 @@ public:
 	FContextEffect() {}
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag EffectTag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere)
 	FGameplayTagContainer Context;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowedClasses = "/Script/Engine.SoundBase, /Script/Niagara.NiagaraSystem"))
+	UPROPERTY(EditAnywhere, meta = (AllowedClasses = "/Script/Engine.SoundBase, /Script/Niagara.NiagaraSystem"))
 	TArray<FSoftObjectPath> Effects;
 
 };
 
 
 /**
- * Effect tag and effect object reference mapping data for ContextEffect registered in the loaded ContextEffectLibrary
+ * Data asset class for mapiing effect tags and effects
  */
-USTRUCT(BlueprintType)
-struct GFXEXT_API FActiveContextEffect
+UCLASS(BlueprintType, Const)
+class GFXEXT_API UContextEffectLibrary : public UDataAsset
 {
 	GENERATED_BODY()
-public:
-	FActiveContextEffect() {}
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag EffectTag;
+	friend class UActiveContextEffectLibrary;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTagContainer Context;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<TObjectPtr<USoundBase>> Sounds;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<TObjectPtr<UNiagaraSystem>> NiagaraSystems;
-
-};
-
-
-/**
- * Data class for linking, reading, and referencing effect tags and effects
- */
-UCLASS(BlueprintType)
-class GFXEXT_API UContextEffectLibrary : public UObject
-{
-	GENERATED_BODY()
 public:
 	UContextEffectLibrary(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Context Effect", meta = (Categories = "ContextEffect"))
+	FGameplayTag EffectTag;
+
 protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Context Effect")
+	UPROPERTY(EditDefaultsOnly, Category = "Context Effect")
 	TArray<FContextEffect> ContextEffects;
 
-protected:
-	UPROPERTY(Transient)
-	TArray<FActiveContextEffect> ActiveContextEffects;
-
-	UPROPERTY(Transient)
-	EContextEffectLibraryLoadState EffectsLoadState{ EContextEffectLibraryLoadState::Unloaded };
-
-public:
-	UFUNCTION(BlueprintCallable)
-	void GetEffects(
-		const FGameplayTag Effect,
-		const FGameplayTagContainer Context,
-		TArray<USoundBase*>& OutSounds,
-		TArray<UNiagaraSystem*>& OutNiagaraSystems);
-
-	UFUNCTION(BlueprintCallable)
-	void LoadEffects();
-
-	EContextEffectLibraryLoadState GetContextEffectLibraryLoadState() const { return EffectsLoadState; }
-
-protected:
-	void LoadEffectsInternal();
-
-	void ContextEffectLibraryLoadingComplete(const TArray<FActiveContextEffect>& NewActiveContextEffect);
+	//
+	// Maximum number of newly created AudioComponent or NiagaraComponent
+	// 
+	// Tips:
+	//	Recycle and use previously created instances when the number of instances reaches max
+	//
+	//UPROPERTY(AdvancedDisplay, EditDefaultsOnly, Category = "Context Effect", meta = (ClampMin = 1.00))
+	//int32 MaxInstances{ 1 };
 
 };

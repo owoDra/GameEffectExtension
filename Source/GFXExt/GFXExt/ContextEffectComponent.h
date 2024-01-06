@@ -5,13 +5,12 @@
 #include "Component/GFCActorComponent.h"
 #include "ContextEffectInterface.h"
 
-#include "GameplayTagContainer.h"
-
 #include "ContextEffectComponent.generated.h"
 
 class UAudioComponent;
 class UNiagaraComponent;
 class UContextEffectLibrary;
+class UActiveContextEffectLibrary;
 
 
 UCLASS( ClassGroup=(Custom), hidecategories = (Variable, Tags, ComponentTick, ComponentReplication, Activation, Cooking, AssetUserData, Collision), CollapseCategories, meta=(BlueprintSpawnableComponent) )
@@ -31,42 +30,47 @@ protected:
 	void LoadAndAddContextEffectLibraries();
 	void UnloadAndRemoveContextEffectLibraries();
 
-protected:
-	//
-	// Whether auto-convert Physical Surface from Trace Result to Context or not
-	//
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
-	bool bConvertPhysicalSurfaceToContext{ true };
 
 public:
-	//
-	// Current Contexts
-	//
-	UPROPERTY(EditAnywhere, Category = "Effect Context")
-	FGameplayTagContainer EffectContexts;
-
 	//
 	// Current Libraries for this Actor
 	//
-	UPROPERTY(EditAnywhere, Category = "Effect Context")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Effect Context")
 	TSet<TSoftObjectPtr<UContextEffectLibrary>> ContextEffectLibraries;
 
-private:
-	UPROPERTY(Transient)
-	TArray<TObjectPtr<UAudioComponent>> ActiveAudioComponents;
+	//
+	// Extra Contexts
+	//
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Effect Context")
+	FGameplayTagContainer ExtraContexts;
 
+protected:
+	//
+	// Mapping list of ActiveContextEffectLibrary and EffectTag loaded based on current ContextEffectLibrary
+	//
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UNiagaraComponent>> ActiveNiagaraComponents;
+	TMap<FGameplayTag, TObjectPtr<UActiveContextEffectLibrary>> ActiveContextEffectLibraries;
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void UpdateEffectContexts(FGameplayTagContainer NewEffectContexts);
+	void UpdateExtraContexts(FGameplayTagContainer NewContexts);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateLibraries(TSet<TSoftObjectPtr<UContextEffectLibrary>> NewContextEffectLibraries);
+	void UpdateContextEffectLibraries(TSet<TSoftObjectPtr<UContextEffectLibrary>> NewContextEffectLibraries);
 
 
 public:
-	virtual void ContextEffectAction_Implementation(FContextEffectGenericParameter Param) override;
+	void PlayEffects_Implementation(
+		FGameplayTag EffectTag
+		, FGameplayTagContainer Contexts
+		, USceneComponent* AttachToComponent	= nullptr
+		, FName AttachPointName					= NAME_None
+		, FVector LocationOffset				= FVector(0.0, 0.0, 0.0)
+		, FRotator RotationOffset				= FRotator(0.0, 0.0, 0.0)
+		, EAttachLocation::Type LocationType	= EAttachLocation::KeepRelativeOffset
+		, float VolumeMultiplier				= 1.0f
+		, float PitchMultiplier					= 1.0f
+		, FVector VFXScale						= FVector(1.0, 1.0, 1.0)
+	) override;
 
 };

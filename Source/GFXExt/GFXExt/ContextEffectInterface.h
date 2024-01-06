@@ -4,7 +4,7 @@
 
 #include "UObject/Interface.h"
 
-#include "ContextEffectTypes.h"
+#include "GameplayTagContainer.h"
 
 #include "ContextEffectInterface.generated.h"
 
@@ -21,7 +21,18 @@
 
  public:
  	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void ContextEffectAction(FContextEffectGenericParameter Param);
+	void PlayEffects(
+		FGameplayTag EffectTag
+		, FGameplayTagContainer Contexts
+		, USceneComponent* AttachToComponent	= nullptr
+		, FName AttachPointName					= NAME_None
+		, FVector LocationOffset				= FVector(0.0, 0.0, 0.0)
+		, FRotator RotationOffset				= FRotator(0.0, 0.0, 0.0)
+		, EAttachLocation::Type LocationType	= EAttachLocation::KeepRelativeOffset
+		, float VolumeMultiplier				= 1.0f
+		, float PitchMultiplier					= 1.0f
+		, FVector VFXScale						= FVector(1.0, 1.0, 1.0)
+	);
 
  };
 

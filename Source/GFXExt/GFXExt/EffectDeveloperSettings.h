@@ -8,6 +8,9 @@
 
 #include "EffectDeveloperSettings.generated.h"
 
+class UPhysicalMaterial;
+struct FHitResult;
+
 
 /**
  * Settings for a loading screen system.
@@ -25,5 +28,11 @@ public:
 	//
 	UPROPERTY(Config, EditAnywhere, Category = "General", meta = (Categories = "SurfaceType"))
 	TMap<TEnumAsByte<EPhysicalSurface>, FGameplayTag> SurfaceTypeToContextMap;
+
+
+public:
+	void ConvertPhysicalSurfaceToContext(EPhysicalSurface SurfaceType, FGameplayTagContainer& OutContexts) const;
+	void ConvertPhysicalMaterialToContext(UPhysicalMaterial* PhysicalMaterial, FGameplayTagContainer& OutContexts) const;
+	void ConvertHitResultToContext(const FHitResult& HitResult, FGameplayTagContainer& OutContexts) const;
 
 };
