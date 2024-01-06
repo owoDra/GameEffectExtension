@@ -118,33 +118,36 @@ void UActiveContextEffectLibrary::PlayEffects(
 
 	if (auto* FoundEffect{ FindEffectPtr(Contexts) })
 	{
+		int32 Index{ 0 };
+
 		// Play Sound. If there is already an AudioComponent, reuse it; if not, create a new one.
 
 		const auto& Sounds{ FoundEffect->Sounds };
 		auto& AudioComponents{ FoundEffect->ActiveAudioComponents };
 
-		for (auto It{ Sounds.CreateConstIterator()}; It; ++It)
+		for (const auto& Sound : Sounds)
 		{
 			// Run only when Sound is valid.
 
-			if (auto Sound{ *It })
+			if (Sound)
 			{
-				// Chache current index
-
-				const auto Index{ It.GetIndex() };
+				auto bShouldCreateNew{ true };
 
 				// If Component already exists. Reuse it.
 
 				if (AudioComponents.IsValidIndex(Index))
 				{
-					auto AudioComponent{ AudioComponents[Index] };
+					if (auto AudioComponent{ AudioComponents[Index] })
+					{
+						AudioComponent->SetSound(Sound);
 
-					AudioComponent->SetSound(Sound);
+						bShouldCreateNew = false;
+					}
 				}
 
 				// If no Component. Newly spawned
 
-				else
+				if (bShouldCreateNew)
 				{
 					auto* AudioComponent
 					{
@@ -158,6 +161,10 @@ void UActiveContextEffectLibrary::PlayEffects(
 							, true
 							, VolumeMultiplier
 							, PitchMultiplier
+							, 0.0f
+							, nullptr
+							, nullptr
+							, false
 						)
 					};
 
@@ -166,35 +173,40 @@ void UActiveContextEffectLibrary::PlayEffects(
 					AudioComponents.EmplaceAt(Index, AudioComponent);
 				}
 			}
+
+			Index++;
 		}
+
+		Index = 0;
 
 		// Play Niagara system. If there is already an NiagaraComponent, reuse it; if not, create a new one.
 
 		const auto& NiagaraSystems{ FoundEffect->NiagaraSystems };
 		auto& NiagaraComponents{ FoundEffect->ActiveNiagaraComponents };
 
-		for (auto It{ NiagaraSystems.CreateConstIterator() }; It; ++It)
+		for (const auto& NiagaraSystem : NiagaraSystems)
 		{
 			// Run only when Niagara system is valid.
 
-			if (auto NiagaraSystem{ *It })
+			if (NiagaraSystem)
 			{
-				// Chache current index
-
-				const auto Index{ It.GetIndex() };
+				auto bShouldCreateNew{ true };
 
 				// If Component already exists. Reuse it.
 
 				if (NiagaraComponents.IsValidIndex(Index))
 				{
-					auto NiagaraComponent{ NiagaraComponents[Index] };
+					if (auto NiagaraComponent{ NiagaraComponents[Index] })
+					{
+						NiagaraComponent->SetAsset(NiagaraSystem);
 
-					NiagaraComponent->SetAsset(NiagaraSystem);
+						bShouldCreateNew = false;
+					}
 				}
 
 				// If no Component. Newly spawned
 
-				else
+				if (bShouldCreateNew)
 				{
 					auto* NiagaraComponent
 					{
@@ -206,7 +218,7 @@ void UActiveContextEffectLibrary::PlayEffects(
 							, RotationOffset
 							, VFXScale
 							, LocationType
-							, true
+							, false
 							, ENCPoolMethod::None
 						)
 					};
@@ -216,6 +228,8 @@ void UActiveContextEffectLibrary::PlayEffects(
 					NiagaraComponents.EmplaceAt(Index, NiagaraComponent);
 				}
 			}
+
+			Index++;
 		}
 	}
 }

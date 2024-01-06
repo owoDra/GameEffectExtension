@@ -22,6 +22,14 @@ class GFXEXT_API UContextEffectComponent
 public:	
 	UContextEffectComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	//
+	// Function name used to add this component
+	//
+	static const FName NAME_ActorFeatureName;
+
+public:
+	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
